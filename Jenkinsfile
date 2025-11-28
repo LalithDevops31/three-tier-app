@@ -11,10 +11,10 @@ pipeline {
         stage('Setup Python Environment') {
             steps {
                 sh '''
-                python3 -m venv venv
-                source venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt --break-system-packages
+                python3 -m venv $WORKSPACE/venv
+                . $WORKSPACE/venv/bin/activate
+                python3 -m pip install --upgrade pip
+                python3 -m pip install -r requirements.txt --break-system-packages
                 '''
             }
         }
@@ -22,7 +22,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                source venv/bin/activate
+                . $WORKSPACE/venv/bin/activate
                 python3 -m py_compile app.py
                 '''
             }
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 sh '''
                 pkill -f app.py || true
-                nohup venv/bin/python3 app.py &
+                nohup $WORKSPACE/venv/bin/python3 $WORKSPACE/app.py > app.log 2>&1 &
                 '''
             }
         }

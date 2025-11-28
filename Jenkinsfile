@@ -2,36 +2,40 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/<your-username>/three-tier-app.git'
+                checkout scm
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup Python Environment') {
             steps {
                 sh '''
-                cd backend
-                pip install -r requirements.txt
+                python3 -m venv venv
+                source venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt --break-system-packages
                 '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'echo "Run your tests here"'
+                sh '''
+                source venv/bin/activate
+                python3 -m py_compile app.py
+                '''
             }
         }
 
         stage('Deploy App') {
             steps {
                 sh '''
-                echo "Starting Flask App..."
                 pkill -f app.py || true
-                nohup python3 backend/app.py &
+                nohup venv/bin/python3 app.py &
                 '''
             }
         }
     }
 }
+
